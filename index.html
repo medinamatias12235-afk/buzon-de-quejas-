@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f6fb">
+  <title>Buzón de quejas</title>
+  <style>
+    :root {
+      --azul: #4d6bfe;
+      --azul-suave: #eef1ff;
+      --texto: #0d0d0d;
+      --texto-suave: #5b6172;
+      --borde: #e5e7eb;
+      --fondo: #f4f6fb;
+      --alta: #e5484d;
+      --media: #e8a33d;
+      --baja: #2f9e44;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--fondo);
+      color: var(--texto);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+    }
+    .envoltura { width: 100%; max-width: 520px; padding: 28px 16px 40px; }
+
+    .cabecera { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .logo {
+      width: 46px; height: 46px; flex: 0 0 auto;
+      border-radius: 14px; background: var(--azul); color: #fff;
+      display: grid; place-items: center; font-size: 22px; font-weight: 700;
+      box-shadow: 0 6px 16px rgba(77, 107, 254, .25);
+    }
+    h1 { font-size: 22px; margin: 0; letter-spacing: -.02em; }
+    .sub { margin: 3px 0 0; color: var(--texto-suave); font-size: 14px; line-height: 1.35; }
+
+    .tarjeta {
+      background: #fff; border: 1px solid var(--borde); border-radius: 18px;
+      padding: 20px; box-shadow: 0 10px 28px rgba(15, 23, 42, .06);
+    }
+
+    .campo { margin-bottom: 18px; }
+    .etiqueta { display: block; font-size: 13px; font-weight: 600; color: var(--texto-suave); margin-bottom: 8px; }
+
+    textarea {
+      width: 100%; min-height: 150px; padding: 14px;
+      border: 1px solid var(--borde); border-radius: 12px;
+      font: inherit; font-size: 15px; line-height: 1.45; color: var(--texto);
+      background: #fbfcfe; resize: vertical;
+    }
+    textarea:focus {
+      outline: none; border-color: var(--azul);
+      box-shadow: 0 0 0 3px rgba(77, 107, 254, .15); background: #fff;
+    }
+    .contador {
+      display: block; text-align: right; font-size: 12px; color: var(--texto-suave);
+      margin-top: 6px; font-variant-numeric: tabular-nums;
+    }
+    .contador.limite { color: var(--alta); font-weight: 600; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { position: relative; }
+    .chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .chip span {
+      display: inline-block; padding: 9px 14px;
+      border: 1px solid var(--borde); border-radius: 999px;
+      font-size: 13.5px; color: var(--texto-suave); background: #fff;
+      cursor: pointer; transition: all .15s ease; user-select: none;
+    }
+    .chip input:checked + span {
+      border-color: var(--azul); background: var(--azul-suave);
+      color: var(--azul); font-weight: 600;
+    }
+    .chip input:focus-visible + span { box-shadow: 0 0 0 3px rgba(77, 107, 254, .2); }
+
+    .boton {
+      width: 100%; height: 50px; border: none; border-radius: 14px;
+      background: var(--azul); color: #fff; font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: filter .15s ease, transform .05s ease;
+      font-family: inherit;
+    }
+    .boton:hover:not(:disabled) { filter: brightness(1.06); }
+    .boton:active:not(:disabled) { transform: scale(.99); }
+    .boton:disabled { opacity: .65; cursor: default; }
+    .boton.secundario { background: #fff; color: var(--azul); border: 1px solid var(--borde); }
+
+    .aviso {
+      background: #fdecec; color: #b42318; border: 1px solid #f5c2c0;
+      border-radius: 12px; padding: 12px 14px; font-size: 14px;
+      margin-bottom: 16px; line-height: 1.4;
+    }
+    .aviso[hidden] { display: none; }
+
+    .exito { text-align: center; padding: 8px 4px 4px; }
+    .exito .icono {
+      width: 56px; height: 56px; margin: 0 auto 14px;
+      border-radius: 50%; background: #e9f7ee; color: var(--baja);
+      display: grid; place-items: center; font-size: 28px;
+    }
+    .exito h2 { margin: 0 0 6px; font-size: 20px; }
+    .exito p { margin: 0 0 16px; color: var(--texto-suave); font-size: 14.5px; line-height: 1.5; }
+    .badge {
+      display: inline-block; padding: 5px 14px; border-radius: 999px;
+      font-size: 13px; font-weight: 700; text-transform: capitalize;
+      margin-bottom: 18px;
+    }
+    .badge.alta { background: #fdecec; color: #c92a2a; }
+    .badge.media { background: #fff4e0; color: #b7791f; }
+    .badge.baja { background: #e9f7ee; color: #2b8a3e; }
+
+    .pie { text-align: center; margin-top: 22px; font-size: 14px; }
+    .pie a { color: var(--azul); text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <main class="envoltura">
+    <header class="cabecera">
+      <div class="logo" aria-hidden="true">!</div>
+      <div>
+        <h1>Buzón de quejas</h1>
+        <p class="sub">Cuéntanos qué pasó. No necesitas dar tu nombre.</p>
+      </div>
+    </header>
+
+    <div class="tarjeta">
+      <div id="aviso" class="aviso" hidden role="alert"></div>
+
+      <form id="form-queja" novalidate>
+        <div class="campo">
+          <label class="etiqueta" for="texto">Tu queja</label>
+          <textarea
+            id="texto"
+            name="texto"
+            maxlength="500"
+            required
+            placeholder="Describe el problema con el mayor detalle posible…"
+          ></textarea>
+          <span id="contador" class="contador">0/500</span>
+        </div>
+
+        <div class="campo">
+          <span class="etiqueta" id="etiqueta-categoria">Categoría</span>
+          <div class="chips" role="radiogroup" aria-labelledby="etiqueta-categoria">
+            <label class="chip">
+              <input type="radio" name="categoria" value="Atención al cliente" checked>
+              <span>Atención al cliente</span>
+            </label>
+            <label class="chip">
+              <input type="radio" name="categoria" value="Producto o servicio">
+              <span>Producto o servicio</span>
+            </label>
+            <label class="chip">
+              <input type="radio" name="categoria" value="Facturación">
+              <span>Facturación</span>
+            </label>
+            <label class="chip">
+              <input type="radio" name="categoria" value="Instalaciones">
+              <span>Instalaciones</span>
+            </label>
+            <label class="chip">
+              <input type="radio" name="categoria" value="Otro">
+              <span>Otro</span>
+            </label>
+          </div>
+        </div>
+
+        <button id="enviar" class="boton" type="submit">Enviar queja</button>
+      </form>
+
+      <div id="exito" class="exito" hidden>
+        <div class="icono" aria-hidden="true">✓</div>
+        <h2>¡Queja enviada!</h2>
+        <p>Gracias por ayudarnos a mejorar.<br>Prioridad asignada:</p>
+        <span id="prioridad-asignada" class="badge baja">baja</span>
+        <button id="otra" class="boton secundario" type="button">Enviar otra queja</button>
+      </div>
+    </div>
+
+    <p class="pie"><a href="/panel.html">Ver el panel de quejas →</a></p>
+  </main>
+
+  <script>
+    const form = document.getElementById('form-queja');
+    const texto = document.getElementById('texto');
+    const contador = document.getElementById('contador');
+    const boton = document.getElementById('enviar');
+    const aviso = document.getElementById('aviso');
+    const exito = document.getElementById('exito');
+    const badge = document.getElementById('prioridad-asignada');
+
+    texto.addEventListener('input', () => {
+      const n = texto.value.length;
+      contador.textContent = n + '/500';
+      contador.classList.toggle('limite', n >= 500);
+    });
+
+    function mostrarAviso(mensaje) {
+      aviso.textContent = mensaje;
+      aviso.hidden = false;
+    }
+
+    form.addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+      aviso.hidden = true;
+
+      const contenido = texto.value.trim();
+      if (contenido.length < 5) {
+        mostrarAviso('Escribe al menos 5 caracteres para describir tu queja.');
+        texto.focus();
+        return;
+      }
+      if (contenido.length > 500) {
+        mostrarAviso('La queja no puede superar los 500 caracteres.');
+        return;
+      }
+
+      const seleccion = form.querySelector('input[name="categoria"]:checked');
+      const categoria = seleccion ? seleccion.value : 'Otro';
+
+      boton.disabled = true;
+      boton.textContent = 'Enviando…';
+
+      try {
+        const respuesta = await fetch('/api/quejas', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ texto: contenido, categoria }),
+        });
+
+        let datos = {};
+        try { datos = await respuesta.json(); } catch (_) { /* respuesta vacía */ }
+
+        if (!respuesta.ok) {
+          throw new Error(datos.error || 'No se pudo enviar la queja. Inténtalo de nuevo.');
+        }
+
+        badge.textContent = datos.prioridad || 'baja';
+        badge.className = 'badge ' + (datos.prioridad || 'baja');
+        form.hidden = true;
+        exito.hidden = false;
+        texto.value = '';
+        contador.textContent = '0/500';
+      } catch (error) {
+        mostrarAviso(error.message || 'Error de conexión. Revisa tu internet e inténtalo otra vez.');
+      } finally {
+        boton.disabled = false;
+        boton.textContent = 'Enviar queja';
+      }
+    });
+
+    document.getElementById('otra').addEventListener('click', () => {
+      exito.hidden = true;
+      form.hidden = false;
+      aviso.hidden = true;
+      texto.focus();
+    });
+  </script>
+</body>
+</html>
