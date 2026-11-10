@@ -1,5 +1,7 @@
 # Buzón de quejas — Cloudflare Pages + D1 + Workers AI
 
+! funciona
+
 Aplicación mínima de quejas anónimas:
 
 - **`/index.html`** — formulario (texto + categoría, sin pedir nombre). Máx. 500 caracteres.
