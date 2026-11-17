@@ -1,6 +1,6 @@
 # Buzón de quejas — Cloudflare Pages + D1 + Workers AI
 
-! funciona 2
+! funciona 3
 
 Aplicación mínima de quejas anónimas:
 
